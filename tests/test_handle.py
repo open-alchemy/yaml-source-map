@@ -199,6 +199,84 @@ MAPPING_TESTS = [
         ],
         id="many primitive",
     ),
+    pytest.param(
+        "key: 0",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 6, 6))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 5, 5),
+                    value_end=Location(0, 6, 6),
+                    key_start=Location(0, 0, 0),
+                    key_end=Location(0, 3, 3),
+                ),
+            ),
+        ],
+        id="single primitive no curly brackets",
+    ),
+    pytest.param(
+        """key_1: 0
+key_2: 0""",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(1, 8, 17))),
+            (
+                "/key_1",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 0, 0),
+                    key_end=Location(0, 5, 5),
+                ),
+            ),
+            (
+                "/key_2",
+                Entry(
+                    value_start=Location(1, 7, 16),
+                    value_end=Location(1, 8, 17),
+                    key_start=Location(1, 0, 9),
+                    key_end=Location(1, 5, 14),
+                ),
+            ),
+        ],
+        id="multi primitive no curly brackets",
+    ),
+    pytest.param(
+        """key_1: 0
+key_2: 0
+key_3: 0""",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(2, 8, 26))),
+            (
+                "/key_1",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 0, 0),
+                    key_end=Location(0, 5, 5),
+                ),
+            ),
+            (
+                "/key_2",
+                Entry(
+                    value_start=Location(1, 7, 16),
+                    value_end=Location(1, 8, 17),
+                    key_start=Location(1, 0, 9),
+                    key_end=Location(1, 5, 14),
+                ),
+            ),
+            (
+                "/key_3",
+                Entry(
+                    value_start=Location(2, 7, 25),
+                    value_end=Location(2, 8, 26),
+                    key_start=Location(2, 0, 18),
+                    key_end=Location(2, 5, 23),
+                ),
+            ),
+        ],
+        id="multi primitive no curly brackets",
+    ),
 ]
 
 
