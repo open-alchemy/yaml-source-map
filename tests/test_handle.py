@@ -3,10 +3,9 @@
 import pytest
 import yaml
 
-from yaml_source_map.types import Location, Entry
-from yaml_source_map.handle import primitive, sequence
 from yaml_source_map.errors import InvalidYamlError
-
+from yaml_source_map.handle import primitive, sequence
+from yaml_source_map.types import Entry, Location
 
 SEQUENCE_TESTS = [
     pytest.param(
@@ -72,6 +71,14 @@ SEQUENCE_TESTS = [
         ],
         id="many primitive",
     ),
+    pytest.param(
+        "[0]",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 3, 3))),
+            ("/0", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 2, 2))),
+        ],
+        id="single primitive",
+    ),
 ]
 
 
@@ -135,12 +142,12 @@ PRIMITIVE_TESTS = [
         id="many character number primitive",
     ),
     pytest.param(
-        f" 0",
+        " 0",
         [("", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 2, 2)))],
         id="start whitespace",
     ),
     pytest.param(
-        f"0 ",
+        "0 ",
         [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 1, 1)))],
         id="end whitespace",
     ),

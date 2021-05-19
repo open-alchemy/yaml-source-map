@@ -1,7 +1,8 @@
 """Calculate the JSON source map for a value."""
 
-from yaml_source_map import errors
 import yaml
+
+from yaml_source_map import errors
 
 from . import types
 
