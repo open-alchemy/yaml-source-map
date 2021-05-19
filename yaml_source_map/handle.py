@@ -37,8 +37,12 @@ def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     """
     # Look for sequence start
     token = loader.get_token()
-    if not isinstance(token, yaml.FlowSequenceStartToken):
-        raise errors.InvalidYamlError(f"expected sequence start but received {token=}")
+    if not isinstance(
+        token, (yaml.FlowSequenceStartToken, yaml.BlockSequenceStartToken)
+    ):
+        raise errors.InvalidYamlError(
+            f"expected sequence or block sequence start but received {token=}"
+        )
     value_start = types.Location(
         token.start_mark.line, token.start_mark.column, token.start_mark.index
     )
@@ -46,20 +50,30 @@ def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     # Handle values
     sequence_index = 0
     entries: types.TSourceMapEntries = []
-    while not isinstance(loader.peek_token(), yaml.FlowSequenceEndToken):
+    while not isinstance(
+        loader.peek_token(), (yaml.FlowSequenceEndToken, yaml.BlockEndToken)
+    ):
+        # Skip block entry
+        if isinstance(loader.peek_token(), yaml.BlockEntryToken):
+            loader.get_token()
+
+        # Retrieve values
         value_entries = value(loader=loader)
         entries.extend(
             (f"/{sequence_index}{pointer}", entry) for pointer, entry in value_entries
         )
         sequence_index += 1
 
-        if isinstance(loader.peek_token(), yaml.FlowEntryToken):
+        # Skip flow entry
+        if isinstance(loader.peek_token(), (yaml.FlowEntryToken)):
             loader.get_token()
 
     # Look for sequence end
     token = loader.get_token()
-    if not isinstance(token, yaml.FlowSequenceEndToken):
-        raise errors.InvalidYamlError(f"expected sequence end but received {token=}")
+    if not isinstance(token, (yaml.FlowSequenceEndToken, yaml.BlockEndToken)):
+        raise errors.InvalidYamlError(
+            f"expected sequence or block end but received {token=}"
+        )
     value_end = types.Location(
         token.end_mark.line, token.end_mark.column, token.end_mark.index
     )
