@@ -23,6 +23,10 @@ def value(*, loader: yaml.Loader) -> types.TSourceMapEntries:
         loader.peek_token(), (yaml.FlowSequenceStartToken, yaml.BlockSequenceStartToken)
     ):
         return sequence(loader=loader)
+    if isinstance(
+        loader.peek_token(), (yaml.FlowMappingStartToken, yaml.BlockMappingStartToken)
+    ):
+        return mapping(loader=loader)
     return primitive(loader=loader)
 
 

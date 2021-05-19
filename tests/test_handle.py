@@ -18,6 +18,11 @@ VALUE_TESTS = [
         [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 2, 2)))],
         id="sequence",
     ),
+    pytest.param(
+        "{}",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 2, 2)))],
+        id="mapping",
+    ),
 ]
 
 
