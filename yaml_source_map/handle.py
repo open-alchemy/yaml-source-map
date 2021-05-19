@@ -19,7 +19,9 @@ def value(*, loader: yaml.Loader) -> types.TSourceMapEntries:
         A list of JSON pointers and source map entries.
 
     """
-    if isinstance(loader.peek_token(), yaml.FlowSequenceStartToken):
+    if isinstance(
+        loader.peek_token(), (yaml.FlowSequenceStartToken, yaml.BlockSequenceStartToken)
+    ):
         return sequence(loader=loader)
     return primitive(loader=loader)
 

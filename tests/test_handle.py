@@ -109,6 +109,24 @@ SEQUENCE_TESTS = [
         ],
         id="many primitive - syntax",
     ),
+    pytest.param(
+        "[[0]]",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 5, 5))),
+            ("/0", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 4, 4))),
+            ("/0/0", Entry(value_start=Location(0, 2, 2), value_end=Location(0, 3, 3))),
+        ],
+        id="single primitive nested",
+    ),
+    pytest.param(
+        "- - 0",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 5, 5))),
+            ("/0", Entry(value_start=Location(0, 2, 2), value_end=Location(0, 5, 5))),
+            ("/0/0", Entry(value_start=Location(0, 4, 4), value_end=Location(0, 5, 5))),
+        ],
+        id="single primitive nested - syntax",
+    ),
 ]
 
 
