@@ -4,8 +4,40 @@ import pytest
 import yaml
 
 from yaml_source_map.errors import InvalidYamlError
-from yaml_source_map.handle import primitive, sequence
+from yaml_source_map.handle import primitive, sequence, value
 from yaml_source_map.types import Entry, Location
+
+VALUE_TESTS = [
+    pytest.param(
+        "0",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 1, 1)))],
+        id="primitive",
+    ),
+    pytest.param(
+        "[]",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 2, 2)))],
+        id="sequence",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "source, expected_entries",
+    VALUE_TESTS,
+)
+def test_value(source, expected_entries):
+    """
+    GIVEN source and expected entries
+    WHEN loader is created and value is called with the loader
+    THEN the expected entries are returned.
+    """
+    loader = yaml.Loader(source)
+    loader.get_token()
+
+    returned_entries = value(loader=loader)
+
+    assert returned_entries == expected_entries
+
 
 SEQUENCE_TESTS = [
     pytest.param(
