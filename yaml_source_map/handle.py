@@ -26,9 +26,98 @@ def value(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     return primitive(loader=loader)
 
 
+def mapping(*, loader: yaml.Loader) -> types.TSourceMapEntries:
+    """
+    Calculate the source map of a mapping value.
+
+    Args:
+        loader: Source of YAML tokens.
+
+    Returns:
+        A list of JSON pointers and source map entries.
+
+    """
+    # Look for mapping start
+    token = loader.get_token()
+    if not isinstance(token, (yaml.FlowMappingStartToken, yaml.BlockMappingStartToken)):
+        raise errors.InvalidYamlError(f"expected mapping start but received {token=}")
+    value_start = types.Location(
+        token.start_mark.line, token.start_mark.column, token.start_mark.index
+    )
+
+    # Handle values
+    entries: types.TSourceMapEntries = []
+    while not isinstance(
+        loader.peek_token(),
+        (
+            yaml.FlowMappingEndToken,
+            yaml.BlockEndToken,
+            yaml.DocumentEndToken,
+            yaml.StreamEndToken,
+        ),
+    ):
+        # Retrieve key
+        key_token = loader.get_token()
+        if not isinstance(key_token, yaml.KeyToken):
+            raise errors.InvalidYamlError(f"expected key but received {key_token=}")
+        key_value_token = loader.get_token()
+        if not isinstance(key_value_token, yaml.ScalarToken):
+            raise errors.InvalidYamlError(
+                f"expected scalar but received {key_value_token=}"
+            )
+        key_start = types.Location(
+            key_value_token.start_mark.line,
+            key_value_token.start_mark.column,
+            key_value_token.start_mark.index,
+        )
+        key_end = types.Location(
+            key_value_token.end_mark.line,
+            key_value_token.end_mark.column,
+            key_value_token.end_mark.index,
+        )
+        key_value = key_value_token.value
+
+        # Retrieve values
+        value_token = loader.get_token()
+        if not isinstance(value_token, yaml.ValueToken):
+            raise errors.InvalidYamlError(f"expected value but received {value_token=}")
+        value_entries = iter(value(loader=loader))
+        value_entry = next(value_entries)
+
+        # Write pointers
+        entries.append(
+            (
+                f"/{key_value}",
+                types.Entry(
+                    value_start=value_entry[1].value_start,
+                    value_end=value_entry[1].value_end,
+                    key_start=key_start,
+                    key_end=key_end,
+                ),
+            )
+        )
+        entries.extend(
+            (f"/{key_value}{pointer}", entry) for pointer, entry in value_entries
+        )
+
+        # Skip flow entry
+        if isinstance(loader.peek_token(), (yaml.FlowEntryToken)):
+            loader.get_token()
+
+    # Look for mapping end
+    token = loader.get_token()
+    if not isinstance(token, (yaml.FlowMappingEndToken, yaml.BlockEndToken)):
+        raise errors.InvalidYamlError(f"expected mapping end but received {token=}")
+    value_end = types.Location(
+        token.end_mark.line, token.end_mark.column, token.end_mark.index
+    )
+
+    return [("", types.Entry(value_start=value_start, value_end=value_end))] + entries
+
+
 def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     """
-    Calculate the source map of an array value.
+    Calculate the source map of a sequence value.
 
     Args:
         loader: Source of YAML tokens.
@@ -42,9 +131,7 @@ def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     if not isinstance(
         token, (yaml.FlowSequenceStartToken, yaml.BlockSequenceStartToken)
     ):
-        raise errors.InvalidYamlError(
-            f"expected sequence or block sequence start but received {token=}"
-        )
+        raise errors.InvalidYamlError(f"expected sequence start but received {token=}")
     value_start = types.Location(
         token.start_mark.line, token.start_mark.column, token.start_mark.index
     )
@@ -79,9 +166,7 @@ def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     # Look for sequence end
     token = loader.get_token()
     if not isinstance(token, (yaml.FlowSequenceEndToken, yaml.BlockEndToken)):
-        raise errors.InvalidYamlError(
-            f"expected sequence or block end but received {token=}"
-        )
+        raise errors.InvalidYamlError(f"expected sequence end but received {token=}")
     value_end = types.Location(
         token.end_mark.line, token.end_mark.column, token.end_mark.index
     )

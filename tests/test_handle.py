@@ -4,7 +4,7 @@ import pytest
 import yaml
 
 from yaml_source_map.errors import InvalidYamlError
-from yaml_source_map.handle import primitive, sequence, value
+from yaml_source_map.handle import mapping, primitive, sequence, value
 from yaml_source_map.types import Entry, Location
 
 VALUE_TESTS = [
@@ -35,6 +35,187 @@ def test_value(source, expected_entries):
     loader.get_token()
 
     returned_entries = value(loader=loader)
+
+    assert returned_entries == expected_entries
+
+
+MAPPING_TESTS = [
+    pytest.param(
+        "{}",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 2, 2)))],
+        id="empty",
+    ),
+    pytest.param(
+        " {}",
+        [("", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 3, 3)))],
+        id="empty whitespace before",
+    ),
+    pytest.param(
+        "{ }",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 3, 3)))],
+        id="empty whitespace between",
+    ),
+    pytest.param(
+        "{} ",
+        [("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 2, 2)))],
+        id="empty whitespace after",
+    ),
+    pytest.param(
+        "{key: 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 8, 8))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 6, 6),
+                    value_end=Location(0, 7, 7),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+        ],
+        id="single primitive",
+    ),
+    pytest.param(
+        "{ key: 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 9, 9))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 2, 2),
+                    key_end=Location(0, 5, 5),
+                ),
+            ),
+        ],
+        id="single primitive whitespace before",
+    ),
+    pytest.param(
+        "{key : 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 9, 9))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+        ],
+        id="single primitive whitespace after key",
+    ),
+    pytest.param(
+        "{key: 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 8, 8))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 6, 6),
+                    value_end=Location(0, 7, 7),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+        ],
+        id="single primitive whitespace before value",
+    ),
+    pytest.param(
+        "{key: 0 }",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 9, 9))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 6, 6),
+                    value_end=Location(0, 7, 7),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+        ],
+        id="single primitive whitespace after value",
+    ),
+    pytest.param(
+        "{key_1: 0,key_2: 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 19, 19))),
+            (
+                "/key_1",
+                Entry(
+                    value_start=Location(0, 8, 8),
+                    value_end=Location(0, 9, 9),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 6, 6),
+                ),
+            ),
+            (
+                "/key_2",
+                Entry(
+                    value_start=Location(0, 17, 17),
+                    value_end=Location(0, 18, 18),
+                    key_start=Location(0, 10, 10),
+                    key_end=Location(0, 15, 15),
+                ),
+            ),
+        ],
+        id="multi primitive",
+    ),
+    pytest.param(
+        "{key_1: 0,key_2: 0,key_3: 0}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 28, 28))),
+            (
+                "/key_1",
+                Entry(
+                    value_start=Location(0, 8, 8),
+                    value_end=Location(0, 9, 9),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 6, 6),
+                ),
+            ),
+            (
+                "/key_2",
+                Entry(
+                    value_start=Location(0, 17, 17),
+                    value_end=Location(0, 18, 18),
+                    key_start=Location(0, 10, 10),
+                    key_end=Location(0, 15, 15),
+                ),
+            ),
+            (
+                "/key_3",
+                Entry(
+                    value_start=Location(0, 26, 26),
+                    value_end=Location(0, 27, 27),
+                    key_start=Location(0, 19, 19),
+                    key_end=Location(0, 24, 24),
+                ),
+            ),
+        ],
+        id="many primitive",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "source, expected_entries",
+    MAPPING_TESTS,
+)
+def test_mapping(source, expected_entries):
+    """
+    GIVEN source and expected entries
+    WHEN loader is created and mapping is called with the loader
+    THEN the expected entries are returned.
+    """
+    loader = yaml.Loader(source)
+    loader.get_token()
+
+    returned_entries = mapping(loader=loader)
 
     assert returned_entries == expected_entries
 
