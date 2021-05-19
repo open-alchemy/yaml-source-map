@@ -148,6 +148,29 @@ def test_sequence(source, expected_entries):
     assert returned_entries == expected_entries
 
 
+SEQUENCE_ERROR_TESTS = [
+    pytest.param("", id="not sequence"),
+    pytest.param("[", id="no closing bracket"),
+]
+
+
+@pytest.mark.parametrize(
+    "source",
+    SEQUENCE_ERROR_TESTS,
+)
+def test_sequence_error(source):
+    """
+    GIVEN source
+    WHEN loader is created and sequence is called with the loader
+    THEN InvalidYamlError is raised.
+    """
+    loader = yaml.Loader(source)
+    loader.get_token()
+
+    with pytest.raises(InvalidYamlError):
+        sequence(loader=loader)
+
+
 PRIMITIVE_TESTS = [
     pytest.param(
         "0",

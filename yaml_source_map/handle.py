@@ -53,7 +53,13 @@ def sequence(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     sequence_index = 0
     entries: types.TSourceMapEntries = []
     while not isinstance(
-        loader.peek_token(), (yaml.FlowSequenceEndToken, yaml.BlockEndToken)
+        loader.peek_token(),
+        (
+            yaml.FlowSequenceEndToken,
+            yaml.BlockEndToken,
+            yaml.DocumentEndToken,
+            yaml.StreamEndToken,
+        ),
     ):
         # Skip block entry
         if isinstance(loader.peek_token(), yaml.BlockEntryToken):
