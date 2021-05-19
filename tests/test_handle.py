@@ -395,6 +395,30 @@ def test_mapping(source, expected_entries):
     assert returned_entries == expected_entries
 
 
+MAPPING_ERROR_TESTS = [
+    pytest.param("", id="not mapping"),
+    pytest.param("{key", id="no key"),
+    pytest.param("{key: 0", id="no closing bracket"),
+]
+
+
+@pytest.mark.parametrize(
+    "source",
+    MAPPING_ERROR_TESTS,
+)
+def test_mapping_error(source):
+    """
+    GIVEN source
+    WHEN loader is created and mapping is called with the loader
+    THEN InvalidYamlError is raised.
+    """
+    loader = yaml.Loader(source)
+    loader.get_token()
+
+    with pytest.raises(InvalidYamlError):
+        mapping(loader=loader)
+
+
 SEQUENCE_TESTS = [
     pytest.param(
         "[]",

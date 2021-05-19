@@ -65,10 +65,7 @@ def mapping(*, loader: yaml.Loader) -> types.TSourceMapEntries:
         if not isinstance(key_token, yaml.KeyToken):
             raise errors.InvalidYamlError(f"expected key but received {key_token=}")
         key_value_token = loader.get_token()
-        if not isinstance(key_value_token, yaml.ScalarToken):
-            raise errors.InvalidYamlError(
-                f"expected scalar but received {key_value_token=}"
-            )
+        assert isinstance(key_value_token, yaml.ScalarToken)
         key_start = types.Location(
             key_value_token.start_mark.line,
             key_value_token.start_mark.column,
@@ -82,9 +79,7 @@ def mapping(*, loader: yaml.Loader) -> types.TSourceMapEntries:
         key_value = key_value_token.value
 
         # Retrieve values
-        value_token = loader.get_token()
-        if not isinstance(value_token, yaml.ValueToken):
-            raise errors.InvalidYamlError(f"expected value but received {value_token=}")
+        assert isinstance(loader.get_token(), yaml.ValueToken)
         value_entries = iter(value(loader=loader))
         value_entry = next(value_entries)
 
