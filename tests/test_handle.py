@@ -282,6 +282,98 @@ key_3: 0""",
         ],
         id="multi primitive no curly brackets",
     ),
+    pytest.param(
+        "{key: {nestedKey: 0}}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 21, 21))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 6, 6),
+                    value_end=Location(0, 20, 20),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+            (
+                "/key/nestedKey",
+                Entry(
+                    value_start=Location(0, 18, 18),
+                    value_end=Location(0, 19, 19),
+                    key_start=Location(0, 7, 7),
+                    key_end=Location(0, 16, 16),
+                ),
+            ),
+        ],
+        id="single nested mapping primitive",
+    ),
+    pytest.param(
+        """key:
+  nestedKey: 0""",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(1, 14, 19))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(1, 2, 7),
+                    value_end=Location(1, 14, 19),
+                    key_start=Location(0, 0, 0),
+                    key_end=Location(0, 3, 3),
+                ),
+            ),
+            (
+                "/key/nestedKey",
+                Entry(
+                    value_start=Location(1, 13, 18),
+                    value_end=Location(1, 14, 19),
+                    key_start=Location(1, 2, 7),
+                    key_end=Location(1, 11, 16),
+                ),
+            ),
+        ],
+        id="single nested mapping primitive no curly braces",
+    ),
+    pytest.param(
+        "{key: [0]}",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 10, 10))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(0, 6, 6),
+                    value_end=Location(0, 9, 9),
+                    key_start=Location(0, 1, 1),
+                    key_end=Location(0, 4, 4),
+                ),
+            ),
+            (
+                "/key/0",
+                Entry(value_start=Location(0, 7, 7), value_end=Location(0, 8, 8)),
+            ),
+        ],
+        id="single nested sequence primitive",
+    ),
+    pytest.param(
+        """key:
+  - 0""",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(1, 5, 10))),
+            (
+                "/key",
+                Entry(
+                    value_start=Location(1, 2, 7),
+                    value_end=Location(1, 5, 10),
+                    key_start=Location(0, 0, 0),
+                    key_end=Location(0, 3, 3),
+                ),
+            ),
+            (
+                "/key/0",
+                Entry(value_start=Location(1, 4, 9), value_end=Location(1, 5, 10)),
+            ),
+        ],
+        id="single nested sequence primitive no curly braces",
+    ),
 ]
 
 
@@ -412,7 +504,24 @@ SEQUENCE_TESTS = [
             ("/0", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 4, 4))),
             ("/0/0", Entry(value_start=Location(0, 2, 2), value_end=Location(0, 3, 3))),
         ],
-        id="single primitive nested",
+        id="single primitive nested sequence",
+    ),
+    pytest.param(
+        "[{key: 0}]",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 10, 10))),
+            ("/0", Entry(value_start=Location(0, 1, 1), value_end=Location(0, 9, 9))),
+            (
+                "/0/key",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 2, 2),
+                    key_end=Location(0, 5, 5),
+                ),
+            ),
+        ],
+        id="single primitive nested mapping",
     ),
     pytest.param(
         "- - 0",
@@ -421,7 +530,24 @@ SEQUENCE_TESTS = [
             ("/0", Entry(value_start=Location(0, 2, 2), value_end=Location(0, 5, 5))),
             ("/0/0", Entry(value_start=Location(0, 4, 4), value_end=Location(0, 5, 5))),
         ],
-        id="single primitive nested - syntax",
+        id="single primitive nested sequence - syntax",
+    ),
+    pytest.param(
+        "- key: 0",
+        [
+            ("", Entry(value_start=Location(0, 0, 0), value_end=Location(0, 8, 8))),
+            ("/0", Entry(value_start=Location(0, 2, 2), value_end=Location(0, 8, 8))),
+            (
+                "/0/key",
+                Entry(
+                    value_start=Location(0, 7, 7),
+                    value_end=Location(0, 8, 8),
+                    key_start=Location(0, 2, 2),
+                    key_end=Location(0, 5, 5),
+                ),
+            ),
+        ],
+        id="single primitive nested mapping - syntax",
     ),
 ]
 
