@@ -1,9 +1,31 @@
 [tool.poetry]
 authors = ["David Andersson <anderssonpublic@gmail.com>"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Development Status :: 5 - Production/Stable",
+  "Natural Language :: English",
+  "Topic :: Software Development :: Documentation",
+  "Topic :: Software Development :: Disassemblers",
+  "Topic :: Text Processing",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
 description = "Calculate JSON Pointers to each value within a YAML document along with the line, column and character position for the start and end of that value"
+documentation = "https://github.com/open-alchemy/yaml-source-map"
+exclude = ["tests", ".vscode", ".github"]
+homepage = "https://github.com/open-alchemy/yaml-source-map"
+keywords = ["Python", "YAML", "source map"]
 license = "MIT"
-name = "yaml-source-map"
-version = "0.1.0"
+name = "yaml_source_map"
+packages = [
+  {include = "yaml_source_map"},
+]
+readme = "README.md"
+repository = "https://github.com/open-alchemy/yaml-source-map"
+version = "1.0.0"
 
 [tool.poetry.dependencies]
 PyYAML = "^5.4.1"
@@ -13,6 +35,8 @@ python = "^3.9"
 [tool.poetry.dev-dependencies]
 black = "^21.5b1"
 pytest = "^6.2.4"
+pytest-cov = "^2.11.1"
+pytest-randomly = "^3.8.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

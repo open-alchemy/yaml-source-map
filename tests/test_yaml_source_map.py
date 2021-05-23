@@ -15,6 +15,16 @@ CALCULATE_TESTS = [
         id="primitive",
     ),
     pytest.param(
+        """# comment
+0""",
+        {
+            "": types.Entry(
+                value_start=types.Location(1, 0, 10), value_end=types.Location(1, 1, 11)
+            )
+        },
+        id="primitive with comment",
+    ),
+    pytest.param(
         "[0]",
         {
             "": types.Entry(
