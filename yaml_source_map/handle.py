@@ -1,4 +1,4 @@
-"""Calculate the JSON source map for a value."""
+"""Calculate the YAML source map for a value."""
 
 import yaml
 
@@ -12,8 +12,7 @@ def value(*, loader: yaml.Loader) -> types.TSourceMapEntries:
     Calculate the source map of any value.
 
     Args:
-        source: The JSON document.
-        current_location: The current location in the source.
+        loader: Source of YAML tokens.
 
     Returns:
         A list of JSON pointers and source map entries.

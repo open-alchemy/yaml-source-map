@@ -1,4 +1,4 @@
-"""Types for calculating the JSON source map."""
+"""Types for calculating the YAML source map."""
 
 import dataclasses
 import typing
@@ -30,14 +30,6 @@ class Location:
     line: int
     column: int
     position: int
-
-    # def to_dict(self) -> TLocationDict:
-    #     """Convert to dictionary."""
-    #     return {
-    #         "line": self.line,
-    #         "column": self.column,
-    #         "pos": self.position,
-    #     }
 
 
 class TEntryDictBase(
@@ -75,18 +67,6 @@ class Entry:
     value_end: Location
     key_start: typing.Optional[Location] = None
     key_end: typing.Optional[Location] = None
-
-    # def to_dict(self) -> TEntryDict:
-    #     """Convert to dictionary."""
-    #     value: TEntryDict = {
-    #         "value": self.value_start.to_dict(),
-    #         "valueEnd": self.value_end.to_dict(),
-    #     }
-    #     if self.key_start is not None:
-    #         value["key"] = self.key_start.to_dict()
-    #     if self.key_end is not None:
-    #         value["keyEnd"] = self.key_end.to_dict()
-    #     return value
 
 
 TSourceMapEntries = typing.List[typing.Tuple[str, Entry]]
