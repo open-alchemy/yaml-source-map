@@ -16,7 +16,7 @@ from yaml_source_map import calculate
 print(calculate('foo: bar'))
 ```
 
-The above prints:
+The above results in:
 
 ```Python
 {
