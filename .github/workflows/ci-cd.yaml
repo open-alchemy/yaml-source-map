@@ -13,19 +13,26 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python-version }}
       - name: Install poetry
         run: pip install poetry
-      - uses: actions/cache@v2.1.5
+      - uses: actions/cache@v3
         id: cache-poetry
         with:
           path: ~/.virtualenvs
-          key: ${{ runner.os }}-python3.9-poetry-${{ hashFiles('poetry.lock', 'poetry.toml') }}
+          key: ${{ runner.os }}-python${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock', 'poetry.toml') }}
       - name: Configure poetry for ci
         run: |
           poetry config virtualenvs.in-project false --local
@@ -34,6 +41,18 @@ jobs:
         if: steps.cache-poetry.outputs.cache-hit != 'true'
         run: |
           poetry install
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+      - uses: actions/cache@v3
+        id: cache-npm
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node14-npm-${{ hashFiles('package-lock.json') }}
+      - name: Install node dependencies
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
       - name: Test with pytest
         run: |
           poetry run pytest || (poetry install && poetry run pytest)
@@ -43,11 +62,11 @@ jobs:
     strategy:
       matrix:
         command:
-          - npx cspell "json_source_map/**/*" "tests/**/*"
+          - npx cspell "yaml_source_map/**/*" "tests/**/*"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Node
-        uses: actions/setup-node@v2.1.5
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
       - name: Install dependencies
@@ -59,12 +78,12 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
-      - uses: pre-commit/action@v2.0.2
+          python-version: "3.11"
+      - uses: pre-commit/action@v3.0.0
 
   build:
     runs-on: ubuntu-latest
@@ -73,14 +92,14 @@ jobs:
       - test
       - staticNode
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.11"
       - name: Install poetry
         run: pip install poetry
-      - uses: actions/cache@v2.1.5
+      - uses: actions/cache@v3
         id: cache-poetry
         with:
           path: ~/.virtualenvs
@@ -97,7 +116,7 @@ jobs:
         run: poetry build
       - name: Upload artifacts for release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v2.2.3
+        uses: actions/upload-artifact@v3
         with:
           name: wheel
           path: dist/
@@ -109,12 +128,12 @@ jobs:
       - build
     steps:
       - name: Retrieve packages
-        uses: actions/download-artifact@v2.0.9
+        uses: actions/download-artifact@v3
         with:
           name: wheel
           path: dist/
       - name: Publish distribution 📦 to Test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.4.2
+        uses: pypa/gh-action-pypi-publish@v1.8.4
         with:
           password: ${{ secrets.test_pypi_password }}
           repository_url: https://test.pypi.org/legacy/
@@ -126,13 +145,13 @@ jobs:
       - release-test-pypi
     steps:
       - name: Retrieve packages
-        uses: actions/download-artifact@v2.0.9
+        uses: actions/download-artifact@v3
         with:
           name: wheel
           path: dist/
       - name: Publish distribution 📦 to PyPI
         if: startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@v1.4.2
+        uses: pypa/gh-action-pypi-publish@v1.8.4
         with:
           password: ${{ secrets.pypi_password }}
           repository_url: https://upload.pypi.org/legacy/
@@ -148,7 +167,7 @@ jobs:
         run: |
           echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
         shell: bash
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get latest Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
